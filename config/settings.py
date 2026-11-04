@@ -1,6 +1,8 @@
 from pathlib import Path
+import base64
 import os
 import sys
+import tempfile
 from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -11,18 +13,22 @@ DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
 IS_TESTING = any(arg in {"test", "pytest"} for arg in sys.argv)
 
 _allowed_hosts = [host.strip() for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",") if host.strip()]
-railway_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "").strip()
-if railway_domain and railway_domain not in _allowed_hosts:
-    _allowed_hosts.append(railway_domain)
+# Vercel provides deployment hostnames without a scheme.
+for deployment_host in (os.environ.get("VERCEL_URL", ""), os.environ.get("VERCEL_PROJECT_PRODUCTION_URL", "")):
+    deployment_host = deployment_host.strip()
+    if deployment_host and deployment_host not in _allowed_hosts:
+        _allowed_hosts.append(deployment_host)
 ALLOWED_HOSTS = _allowed_hosts
 if not DEBUG and SECRET_KEY == "dev-only-change-this-secret-key-before-deployment":
     raise ImproperlyConfigured("Set DJANGO_SECRET_KEY to a strong random value before production deployment.")
 
 CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if origin.strip()]
-if railway_domain:
-    railway_origin = f"https://{railway_domain}"
-    if railway_origin not in CSRF_TRUSTED_ORIGINS:
-        CSRF_TRUSTED_ORIGINS.append(railway_origin)
+for deployment_host in (os.environ.get("VERCEL_URL", ""), os.environ.get("VERCEL_PROJECT_PRODUCTION_URL", "")):
+    deployment_host = deployment_host.strip()
+    if deployment_host:
+        deployment_origin = f"https://{deployment_host}"
+        if deployment_origin not in CSRF_TRUSTED_ORIGINS:
+            CSRF_TRUSTED_ORIGINS.append(deployment_origin)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -59,15 +65,47 @@ WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
 if os.environ.get("DB_ENGINE", "sqlite").lower() == "mysql":
+    db_host = os.environ.get("DB_HOST") or os.environ.get("MYSQLHOST", "127.0.0.1")
+    mysql_options = {"charset": "utf8mb4", "connect_timeout": 10}
+
+    # Aiven supplies a private CA certificate. Vercel environment variables
+    # cannot provide a file directly, so decode DB_SSL_CA_B64 into /tmp,
+    # which is writable by Vercel Functions.
+    ssl_ca_b64 = "".join(os.environ.get("DB_SSL_CA_B64", "").split())
+    ssl_ca_path = os.environ.get("DB_SSL_CA", "").strip()
+    if ssl_ca_b64:
+        try:
+            ca_bytes = base64.b64decode(ssl_ca_b64, validate=True)
+        except (ValueError, base64.binascii.Error) as exc:
+            raise ImproperlyConfigured("DB_SSL_CA_B64 must contain a valid Base64-encoded PEM CA certificate.") from exc
+        if b"-----BEGIN CERTIFICATE-----" not in ca_bytes:
+            raise ImproperlyConfigured("DB_SSL_CA_B64 does not appear to contain a PEM certificate.")
+        ca_file = Path(tempfile.gettempdir()) / "placementpilot-aiven-ca.pem"
+        temp_ca_file = ca_file.with_suffix(".tmp")
+        temp_ca_file.write_bytes(ca_bytes)
+        temp_ca_file.replace(ca_file)
+        try:
+            os.chmod(ca_file, 0o600)
+        except OSError:
+            pass
+        ssl_ca_path = str(ca_file)
+
+    if ssl_ca_path:
+        mysql_options.update({"ssl_ca": ssl_ca_path, "ssl_verify_cert": True, "ssl_verify_identity": True})
+    elif db_host.endswith(".aivencloud.com"):
+        raise ImproperlyConfigured("Aiven MySQL requires DB_SSL_CA_B64 (Base64-encoded CA certificate) or DB_SSL_CA (certificate file path).")
+
+    # Short-lived serverless invocations should not retain many idle DB sessions.
+    default_conn_age = "0" if os.environ.get("VERCEL") == "1" else "60"
     DATABASES = {"default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": os.environ.get("DB_NAME") or os.environ.get("MYSQLDATABASE", "placementpilot"),
         "USER": os.environ.get("DB_USER") or os.environ.get("MYSQLUSER", "root"),
         "PASSWORD": os.environ.get("DB_PASSWORD") or os.environ.get("MYSQLPASSWORD", ""),
-        "HOST": os.environ.get("DB_HOST") or os.environ.get("MYSQLHOST", "127.0.0.1"),
+        "HOST": db_host,
         "PORT": os.environ.get("DB_PORT") or os.environ.get("MYSQLPORT", "3306"),
-        "OPTIONS": {"charset": "utf8mb4", "connect_timeout": 10},
-        "CONN_MAX_AGE": 60,
+        "OPTIONS": mysql_options,
+        "CONN_MAX_AGE": int(os.environ.get("DB_CONN_MAX_AGE", default_conn_age)),
     }}
 else:
     DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}}
@@ -104,7 +142,7 @@ LOGOUT_REDIRECT_URL = "home"
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
 
-# Railway terminates HTTPS at its proxy; trust the forwarded scheme in production.
+# Vercel terminates HTTPS at its edge; trust the forwarded scheme in production.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
