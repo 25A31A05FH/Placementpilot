@@ -1,0 +1,31 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("", views.home, name="home"),
+    path("register/", views.register, name="register"),
+    path("login/", views.login_view, name="login"),
+    path("logout/", views.logout_view, name="logout"),
+    path("dashboard/", views.dashboard, name="dashboard"),
+    path("profile/", views.profile_view, name="profile"),
+    path("drives/", views.drive_list, name="drives"),
+    path("eligible-drives/", views.eligible_drives, name="eligible_drives"),
+    path("drives/<int:pk>/", views.drive_detail, name="drive_detail"),
+    path("drives/<int:pk>/apply/", views.apply_to_drive, name="apply_to_drive"),
+    path("applications/", views.applications, name="applications"),
+    path("applications/<int:pk>/status/", views.update_application, name="update_application"),
+    path("resume-analyzer/", views.resume_analyzer, name="resume_analyzer"),
+    path("notifications/", views.notifications, name="notifications"),
+    path("manage/students/", views.admin_students, name="students"),
+    path("manage/students/create/", views.create_student, name="create_student"),
+    path("manage/students/<int:pk>/edit/", views.edit_student, name="edit_student"),
+    path("manage/students/<int:pk>/delete/", views.delete_student, name="delete_student"),
+    path("manage/companies/", views.manage_companies, name="companies"),
+    path("manage/companies/<int:pk>/edit/", views.edit_company, name="edit_company"),
+    path("manage/companies/<int:pk>/delete/", views.delete_company, name="delete_company"),
+    path("manage/drives/", views.manage_drives, name="manage_drives"),
+    path("manage/drives/create/", views.drive_form, name="create_drive"),
+    path("manage/drives/<int:pk>/edit/", views.drive_form, name="edit_drive"),
+    path("manage/drives/<int:pk>/delete/", views.delete_drive, name="delete_drive"),
+    path("manage/recruiters/", views.recruiters, name="recruiters"),
+]

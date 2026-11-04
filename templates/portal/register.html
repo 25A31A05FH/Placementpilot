@@ -1,0 +1,32 @@
+{% extends 'portal/base.html' %}
+{% block title %}Create account{% endblock %}
+{% block content %}
+<section class="register-page">
+  <div class="register-shell">
+    <div class="register-intro">
+      <div class="eyebrow eyebrow-light">START YOUR PLACEMENT JOURNEY</div>
+      <h1>Build your <span class="gradient-text-light">career profile.</span></h1>
+      <p>Create your student account to track opportunities, check eligibility and manage applications in one place.</p>
+      <div class="register-points"><span><b>01</b> Academic profile</span><span><b>02</b> LeetCode progress</span><span><b>03</b> Eligible placement drives</span></div>
+    </div>
+    <div class="panel register-card">
+      <div class="register-card-head"><div><div class="eyebrow eyebrow-light">STUDENT ACCOUNT</div><h2>Create your account</h2><p>Fields marked * are required.</p></div><div class="register-step">01 <span>/ 01</span></div></div>
+      <form method="post" novalidate>{% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="register-form-grid">
+          {% for field in form %}
+          <div class="field-wrap {% if field.name == 'password1' or field.name == 'password2' %}register-password-field{% endif %}">
+            <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="required">*</span>{% endif %}</label>
+            {{ field }}
+            {% if field.help_text %}<small class="field-help">{{ field.help_text|striptags }}</small>{% endif %}
+            {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+        <button class="btn btn-primary btn-large register-submit" type="submit">Create student account <span>→</span></button>
+      </form>
+      <div class="register-login">Already have an account? <a href="{% url 'login' %}">Sign in</a></div>
+    </div>
+  </div>
+</section>
+{% endblock %}

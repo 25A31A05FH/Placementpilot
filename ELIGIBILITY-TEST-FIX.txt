@@ -1,0 +1,8 @@
+PlacementPilot eligibility test fix
+
+The missing-skill logic now compares skill names case-insensitively while
+preserving the spelling used in the placement drive's requirements.
+For a drive requiring "Python, SQL" and a profile listing "Python", the
+eligibility reason now correctly names "SQL" instead of "sql".
+
+No database migration is required for this fix.
