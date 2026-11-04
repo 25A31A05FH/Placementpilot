@@ -99,7 +99,7 @@ if os.environ.get("DB_ENGINE", "sqlite").lower() == "mysql":
     default_conn_age = "0" if os.environ.get("VERCEL") == "1" else "60"
     DATABASES = {"default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.environ.get("DB_NAME") or os.environ.get("MYSQLDATABASE", "placementpilot"),
+       "NAME": (os.environ.get("DB_NAME") or os.environ.get("MYSQLDATABASE", "placementpilot")).strip(),
         "USER": os.environ.get("DB_USER") or os.environ.get("MYSQLUSER", "root"),
         "PASSWORD": os.environ.get("DB_PASSWORD") or os.environ.get("MYSQLPASSWORD", ""),
         "HOST": db_host,
