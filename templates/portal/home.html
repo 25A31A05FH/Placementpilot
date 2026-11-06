@@ -10,8 +10,9 @@
     <h1>Give your career journey<br>the <span>platform it deserves.</span></h1>
     <p class="pp-hero-description">One connected workspace for students, placement teams and recruiters. Discover opportunities, check eligibility and track every step—from application to offer.</p>
     <div class="pp-hero-actions">
-      <a class="pp-button pp-button-light" href="{% url 'register' %}">Get started <span aria-hidden="true">↗</span></a>
-      <a class="pp-button pp-button-dark" href="{% url 'login' %}">Sign in to PlacementPilot</a>
+      <a class="pp-button pp-button-light" href="{% url 'student_login' %}">Student login <span aria-hidden="true">↗</span></a>
+      <a class="pp-button pp-button-dark" href="{% url 'admin_login' %}">Administrator login</a>
+      <a class="pp-button pp-button-dark" href="{% url 'register' %}">Create student account</a>
     </div>
     <div class="pp-hero-note"><span class="pp-note-check">✓</span> Built for your campus placement journey <span class="pp-note-separator">·</span> Student, Admin &amp; Recruiter portals</div>
 
@@ -64,7 +65,7 @@
 
 <section class="how-section" id="how-it-works"><div class="container how-grid"><div><div class="eyebrow">A CLEARER PLACEMENT PROCESS</div><h2>From profile to <span class="gradient-text">possibility.</span></h2><p class="muted">PlacementPilot keeps the important steps connected, so students know what to do and placement teams can see what is happening.</p><a class="text-link" href="{% url 'register' %}">Start your journey <span>→</span></a></div><div class="steps"><div class="step"><span>01</span><div><h3>Build your profile</h3><p>Add your academic details, skills and resume.</p></div></div><div class="step"><span>02</span><div><h3>Discover eligible drives</h3><p>Review placement opportunities and criteria.</p></div></div><div class="step"><span>03</span><div><h3>Apply and track</h3><p>Submit applications and follow status updates.</p></div></div></div></div></section>
 
-{% if featured_drives %}<section class="section container" id="opportunities"><div class="section-heading align-left"><div class="eyebrow eyebrow-light">LATEST OPPORTUNITIES</div><h2>Open placement drives</h2></div><div class="drive-grid">{% for drive in featured_drives %}<article class="drive-card"><div class="drive-company">{{ drive.company.name|slice:':1' }}</div><span class="tag">Open drive</span><h3>{{ drive.title }}</h3><p>{{ drive.company.name }} · {{ drive.company.location|default:'Campus hiring' }}</p><div class="drive-meta"><span>{{ drive.package_lpa }} LPA</span><span>Min CGPA {{ drive.min_cgpa }}</span></div><a class="text-link" href="{% url 'login' %}">Sign in to view drive →</a></article>{% endfor %}</div></section>{% endif %}
+{% if featured_drives %}<section class="section container" id="opportunities"><div class="section-heading align-left"><div class="eyebrow eyebrow-light">LATEST OPPORTUNITIES</div><h2>Open placement drives</h2></div><div class="drive-grid">{% for drive in featured_drives %}<article class="drive-card"><div class="drive-company">{{ drive.company.name|slice:':1' }}</div><span class="tag">Open drive</span><h3>{{ drive.title }}</h3><p>{{ drive.company.name }} · {{ drive.company.location|default:'Campus hiring' }}</p><div class="drive-meta"><span>{{ drive.package_lpa }} LPA</span><span>Min CGPA {{ drive.min_cgpa }}</span></div><a class="text-link" href="{% url 'student_login' %}">Student sign in to view drive →</a></article>{% endfor %}</div></section>{% endif %}
 
 <section class="cta-section" id="documentation"><div class="container cta-inner"><div><div class="eyebrow">YOUR NEXT CHAPTER STARTS HERE</div><h2>Make your placement season <span class="gradient-text">count.</span></h2><p>Build your profile, find your fit, and keep every step in focus.</p></div><a class="btn btn-primary btn-large" href="{% url 'register' %}">Create your account <span>↗</span></a></div></section>
 {% endblock %}

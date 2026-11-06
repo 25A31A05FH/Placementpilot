@@ -1,0 +1,20 @@
+{% extends 'portal/base.html' %}
+{% block title %}Applicants · {{ drive.title }}{% endblock %}
+{% block content %}
+<section class="page-shell container">
+  <div class="page-heading">
+    <a class="back-link" href="{% url 'manage_drives' %}">← Back to placement drives</a>
+    <div class="eyebrow eyebrow-light">DRIVE APPLICANTS</div>
+    <h1>{{ drive.title }}</h1>
+    <p>{{ drive.company.name }} · Deadline {{ drive.deadline|date:'d M Y' }}</p>
+  </div>
+  <div class="stat-cards applicants-summary">
+    <div class="stat-card"><span class="stat-label">Total applicants</span><strong>{{ applications|length }}</strong><small>Students who applied to this drive</small><span class="stat-icon">♙</span></div>
+    <div class="stat-card"><span class="stat-label">Pending review</span><strong>{{ applications|dictsort:'status'|length }}</strong><small>Review each application below</small><span class="stat-icon">◷</span></div>
+  </div>
+  <div class="panel">
+    <div class="panel-heading"><div><h2>Student applications</h2><p>Review applicant details and update their application status.</p></div><a class="text-link" href="{% url 'applications' %}">All applications →</a></div>
+    {% include 'portal/application_table.html' with applications=applications show_action=True %}
+  </div>
+</section>
+{% endblock %}

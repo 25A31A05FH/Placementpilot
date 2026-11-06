@@ -80,3 +80,25 @@
 .register-login a{color:#6558cb;font-weight:800;margin-left:4px}
 @media(max-width:1000px){.register-shell{grid-template-columns:1fr;gap:20px}.register-intro{position:static;padding:0 4px}.register-intro h1{font-size:40px}.register-points{display:flex;flex-wrap:wrap;gap:10px 20px;margin-top:20px}.register-card{padding:30px}}
 @media(max-width:760px){.register-page{padding:38px 15px 55px}.register-intro h1{font-size:34px}.register-intro>p{font-size:13px}.register-points{display:grid;gap:8px}.register-card{padding:22px 18px}.register-card-head h2{font-size:21px}.register-form-grid{grid-template-columns:1fr;gap:15px}.register-password-field{grid-column:auto}.register-submit{width:100%;min-width:0}}
+
+
+/* Dedicated student and administrator portal selection */
+.portal-choice-section{min-height:calc(100vh - 152px);padding:78px 22px 90px;background:radial-gradient(circle at 15% 10%,rgba(124,104,234,.10),transparent 32%),#f5f7fc}
+.portal-choice-heading{text-align:center;max-width:660px;margin:0 auto 38px}
+.portal-choice-heading h1{font-size:clamp(34px,5vw,50px);letter-spacing:-2px;line-height:1.1;margin:0 0 12px;color:#172039}
+.portal-choice-heading p{font-size:14px;color:#788198;margin:0}
+.portal-choice-grid{width:min(900px,100%);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:0 auto}
+.portal-choice-card{display:flex;flex-direction:column;min-height:305px;padding:30px;border:1px solid #e3e8f1;border-radius:18px;background:#fff;box-shadow:0 16px 45px rgba(20,34,65,.05);transition:transform .2s,border-color .2s,box-shadow .2s}
+.portal-choice-card:hover{transform:translateY(-5px);border-color:#c9c1f5;box-shadow:0 22px 55px rgba(20,34,65,.10)}
+.portal-choice-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;margin-bottom:22px;background:#efecff;color:#6f5bd4;font-size:22px}
+.admin-portal-card .portal-choice-icon{background:#e9f3ff;color:#347fc1}
+.portal-choice-kicker{font-size:9px;font-weight:900;letter-spacing:1.5px;color:#8a84c6}
+.portal-choice-card h2{font-size:25px;letter-spacing:-.8px;margin:6px 0 8px;color:#1c2740}
+.portal-choice-card p{max-width:340px;margin:0 0 26px;color:#788198;font-size:13px;line-height:1.75}
+.portal-choice-link{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:15px;border-top:1px solid #edf0f5;color:#6558cb;font-size:12px;font-weight:800}
+.portal-choice-link b{font-size:17px}
+.portal-choice-footer{text-align:center;margin:25px 0 0;color:#7d879b;font-size:12px}
+.portal-choice-footer a{color:#6558cb;font-weight:800}
+.row-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.applicants-summary{grid-template-columns:repeat(2,minmax(0,1fr));max-width:520px}
+@media(max-width:760px){.portal-choice-section{padding:48px 15px 60px}.portal-choice-heading{margin-bottom:25px}.portal-choice-grid{grid-template-columns:1fr}.portal-choice-card{min-height:245px;padding:24px}.portal-choice-card h2{font-size:22px}.applicants-summary{grid-template-columns:1fr}}

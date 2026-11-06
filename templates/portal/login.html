@@ -1,2 +1,36 @@
-{% extends 'portal/base.html' %}{% block title %}Sign in{% endblock %}{% block content %}
-<section class="auth-section"><div class="auth-aside"><div class="eyebrow">WELCOME BACK</div><h1>Your next opportunity is closer than you think.</h1><p>Sign in to pick up right where you left off — your applications, updates and placement journey are waiting.</p><div class="auth-aside-note"><span>✦</span> One workspace for every placement milestone.</div></div><div class="auth-panel"><div class="auth-panel-head"><span class="auth-icon">↗</span><h2>Sign in to PlacementPilot</h2><p>Use your username or registered email.</p></div>{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}<form method="post" class="stack-form">{% csrf_token %}<label>Username or email<input class="form-control" type="text" name="username" value="{{ remembered_username }}" autocomplete="username" required autofocus placeholder="you@example.com"></label><label>Password<input class="form-control" type="password" name="password" autocomplete="current-password" required placeholder="Enter your password"></label><label class="remember-row"><input type="checkbox" name="remember_me" {% if remember_checked %}checked{% endif %}> <span>Remember me · keep me signed in for 14 days</span></label><button class="btn btn-primary btn-full btn-large" type="submit">Sign in <span>→</span></button></form><div class="auth-switch">New to PlacementPilot? <a href="{% url 'register' %}">Create an account</a></div><p class="auth-hint">Administrators and recruiters use the accounts created for them by the placement team. Remember me keeps your PlacementPilot session active; your password is never saved as plain text.</p></div></section>{% endblock %}
+{% extends 'portal/base.html' %}
+{% block title %}{{ portal_title }} sign in{% endblock %}
+{% block content %}
+<section class="auth-section">
+  <div class="auth-aside">
+    <div class="eyebrow">{% if portal_role == 'admin' %}PLACEMENT OFFICE ACCESS{% elif portal_role == 'recruiter' %}HIRING PARTNER ACCESS{% else %}STUDENT ACCESS{% endif %}</div>
+    <h1>{% if portal_role == 'admin' %}Keep every placement operation in view.{% elif portal_role == 'recruiter' %}Manage your campus hiring pipeline.{% else %}Your next opportunity is closer than you think.{% endif %}</h1>
+    <p>{% if portal_role == 'admin' %}Create placement drives, review student applications and coordinate your campus placement activity from one secure workspace.{% elif portal_role == 'recruiter' %}Manage your openings and review candidates who have applied to your company drives.{% else %}Explore eligible drives, manage your profile and follow every application from one place.{% endif %}</p>
+    <div class="auth-aside-note"><span>✦</span> One connected workspace for every placement milestone.</div>
+  </div>
+  <div class="auth-panel">
+    <div class="auth-panel-head">
+      <span class="auth-icon">↗</span>
+      <h2>{{ portal_title }} sign in</h2>
+      <p>Use the account credentials provided for this portal.</p>
+    </div>
+    {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+    <form method="post" class="stack-form">
+      {% csrf_token %}
+      <label>Username or email<input class="form-control" type="text" name="username" value="{{ remembered_username }}" autocomplete="username" required autofocus placeholder="you@example.com"></label>
+      <label>Password<input class="form-control" type="password" name="password" autocomplete="current-password" required placeholder="Enter your password"></label>
+      <label class="remember-row"><input type="checkbox" name="remember_me" {% if remember_checked %}checked{% endif %}> <span>Remember me · keep me signed in for 14 days</span></label>
+      <button class="btn btn-primary btn-full btn-large" type="submit">Sign in to {{ portal_title }} portal <span>→</span></button>
+    </form>
+    <div class="auth-switch"><a href="{% url 'login' %}">← Choose a different portal</a></div>
+    {% if portal_role == 'student' %}
+      <div class="auth-switch">New to PlacementPilot? <a href="{% url 'register' %}">Create a student account</a></div>
+    {% elif portal_role == 'admin' %}
+      <p class="auth-hint">Administrator access is granted by the placement team. Student registration cannot create administrator accounts.</p>
+    {% else %}
+      <p class="auth-hint">Recruiter access is provided by the placement team.</p>
+    {% endif %}
+    <p class="auth-hint">Remember me extends your PlacementPilot session; your password is never saved as plain text.</p>
+  </div>
+</section>
+{% endblock %}

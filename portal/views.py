@@ -47,8 +47,18 @@ def register(request):
 
 
 def login_view(request):
+    """Show the portal chooser; keep POST compatibility for existing sign-in links."""
     if request.user.is_authenticated:
         return redirect("dashboard")
+    if request.method == "POST":
+        return _portal_login(request, expected_role=None)
+    return render(request, "portal/login_choice.html")
+
+
+def _portal_login(request, expected_role):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+
     error = None
     if request.method == "POST":
         identity = request.POST.get("username", "").strip()
@@ -58,29 +68,61 @@ def login_view(request):
             match = User.objects.filter(email__iexact=identity).first()
             if match:
                 user = authenticate(request, username=match.username, password=password)
+
         if user:
-            login(request, user)
-            remember_me = request.POST.get("remember_me") == "on"
-            # Keep the authenticated session for 14 days only when requested.
-            # Passwords are never stored in cookies or in the database as plain text.
-            request.session.set_expiry(60 * 60 * 24 * 14 if remember_me else 0)
-            next_url = request.GET.get("next", "")
-            if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
-                response = redirect(next_url)
+            actual_role = "admin" if user.is_staff or user.is_superuser else (
+                Profile.objects.filter(user=user).values_list("role", flat=True).first()
+            )
+            if expected_role and actual_role != expected_role:
+                portal_name = dict(Profile.ROLE_CHOICES).get(expected_role, expected_role.title())
+                error = f"This account does not have access to the {portal_name} portal. Please use the correct login section."
             else:
-                response = redirect("dashboard")
-            if remember_me:
-                response.set_cookie("pp_remembered_username", identity, max_age=60 * 60 * 24 * 30,
-                                    httponly=True, samesite="Lax", secure=request.is_secure())
-            else:
-                response.delete_cookie("pp_remembered_username", samesite="Lax")
-            return response
-        error = "The username/email or password was not recognised."
+                login(request, user)
+                remember_me = request.POST.get("remember_me") == "on"
+                # Only the session duration and remembered username are stored; never the password.
+                request.session.set_expiry(60 * 60 * 24 * 14 if remember_me else 0)
+                next_url = request.GET.get("next", "")
+                if next_url and url_has_allowed_host_and_scheme(
+                    next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+                ):
+                    response = redirect(next_url)
+                else:
+                    response = redirect("dashboard")
+                if remember_me:
+                    response.set_cookie(
+                        "pp_remembered_username", identity, max_age=60 * 60 * 24 * 30,
+                        httponly=True, samesite="Lax", secure=request.is_secure()
+                    )
+                else:
+                    response.delete_cookie("pp_remembered_username", samesite="Lax")
+                return response
+        else:
+            error = "The username/email or password was not recognised."
+
+    portal_title = {
+        "student": "Student",
+        "admin": "Administrator",
+        "recruiter": "Recruiter",
+    }.get(expected_role, "PlacementPilot")
     return render(request, "portal/login.html", {
         "error": error,
+        "portal_role": expected_role,
+        "portal_title": portal_title,
         "remembered_username": request.COOKIES.get("pp_remembered_username", ""),
         "remember_checked": bool(request.COOKIES.get("pp_remembered_username")),
     })
+
+
+def student_login(request):
+    return _portal_login(request, expected_role="student")
+
+
+def admin_login(request):
+    return _portal_login(request, expected_role="admin")
+
+
+def recruiter_login(request):
+    return _portal_login(request, expected_role="recruiter")
 
 
 @require_POST
@@ -357,6 +399,22 @@ def manage_drives(request):
     if user_role(request.user) == "recruiter":
         qs = qs.filter(created_by=request.user)
     return render(request, "portal/manage_drives.html", {"drives": qs})
+
+
+@role_required("admin", "recruiter")
+def drive_applicants(request, pk):
+    drive = get_object_or_404(
+        PlacementDrive.objects.select_related("company"), pk=pk
+    )
+    if user_role(request.user) == "recruiter" and drive.created_by_id != request.user.id:
+        return HttpResponseForbidden("You cannot view applicants for this drive.")
+    applicants = drive.applications.select_related(
+        "student", "drive", "drive__company"
+    ).order_by("-applied_at")
+    return render(request, "portal/drive_applicants.html", {
+        "drive": drive,
+        "applications": applicants,
+    })
 
 
 @role_required("admin", "recruiter")

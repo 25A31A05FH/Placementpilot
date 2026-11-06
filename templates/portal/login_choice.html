@@ -1,0 +1,28 @@
+{% extends 'portal/base.html' %}
+{% block title %}Choose your portal{% endblock %}
+{% block content %}
+<section class="portal-choice-section">
+  <div class="portal-choice-heading">
+    <div class="eyebrow eyebrow-light">WELCOME TO PLACEMENTPILOT</div>
+    <h1>Choose your <span class="gradient-text-light">workspace.</span></h1>
+    <p>Sign in through the portal that matches your PlacementPilot account.</p>
+  </div>
+  <div class="portal-choice-grid">
+    <a class="portal-choice-card student-portal-card" href="{% url 'student_login' %}">
+      <span class="portal-choice-icon">♙</span>
+      <span class="portal-choice-kicker">FOR STUDENTS</span>
+      <h2>Student portal</h2>
+      <p>Explore eligible placement drives, update your profile and track your applications.</p>
+      <span class="portal-choice-link">Student sign in <b>→</b></span>
+    </a>
+    <a class="portal-choice-card admin-portal-card" href="{% url 'admin_login' %}">
+      <span class="portal-choice-icon">▦</span>
+      <span class="portal-choice-kicker">FOR PLACEMENT TEAMS</span>
+      <h2>Administrator portal</h2>
+      <p>Create placement drives, manage companies and review every student application.</p>
+      <span class="portal-choice-link">Administrator sign in <b>→</b></span>
+    </a>
+  </div>
+  <p class="portal-choice-footer">New student? <a href="{% url 'register' %}">Create an account</a>. &nbsp; Recruiter? <a href="{% url 'recruiter_login' %}">Sign in here</a>.</p>
+</section>
+{% endblock %}

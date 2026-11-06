@@ -69,3 +69,43 @@ class PlacementPilotFlowTests(TestCase):
         response = self.client.post(f"/drives/{self.drive.pk}/apply/")
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Application.objects.filter(student=self.student, drive=self.drive).count(), 1)
+
+    def test_login_page_offers_separate_student_and_admin_portals(self):
+        response = self.client.get("/login/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Student portal")
+        self.assertContains(response, "Administrator portal")
+
+    def test_student_cannot_sign_in_through_admin_portal(self):
+        response = self.client.post("/admin-login/", {
+            "username": "hanish", "password": "TestPass123!",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "does not have access to the Administrator portal")
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_admin_can_sign_in_and_manage_drives(self):
+        admin_user = User.objects.create_user(username="placement_admin", password="AdminPass123!")
+        Profile.objects.create(user=admin_user, role="admin")
+        response = self.client.post("/admin-login/", {
+            "username": "placement_admin", "password": "AdminPass123!",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/dashboard/")
+        self.assertEqual(self.client.get("/manage/drives/").status_code, 200)
+
+    def test_admin_can_view_students_who_applied_to_a_drive(self):
+        Application.objects.create(student=self.student, drive=self.drive)
+        admin_user = User.objects.create_user(username="placement_admin", password="AdminPass123!")
+        Profile.objects.create(user=admin_user, role="admin")
+        self.client.force_login(admin_user)
+        response = self.client.get(f"/manage/drives/{self.drive.pk}/applicants/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "hanish")
+        self.assertContains(response, "Student applications")
+
+    def test_student_cannot_view_admin_drive_applicants_page(self):
+        self.client.login(username="hanish", password="TestPass123!")
+        response = self.client.get(f"/manage/drives/{self.drive.pk}/applicants/")
+        self.assertEqual(response.status_code, 302)
+
