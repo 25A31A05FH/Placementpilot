@@ -17,6 +17,9 @@ commands = [
     # Create fictional sample companies and drives for the first live demo.
     # The command is idempotent and does not create demo login accounts.
     [sys.executable, "manage.py", "seed_demo"],
+    # Optional one-time promotion of an existing account, configured by username.
+    # Leave PLACEMENT_ADMIN_USERNAME unset during normal deployments.
+    [sys.executable, "manage.py", "promote_placement_admin"],
 ]
 
 for command in commands:

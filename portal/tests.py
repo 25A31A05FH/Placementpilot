@@ -117,3 +117,13 @@ class PlacementPilotFlowTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "/dashboard/")
 
+    def test_promote_placement_admin_command_assigns_admin_role_without_changing_password(self):
+        from django.core.management import call_command
+        admin_user = User.objects.create_user(username="promoted_user", password="ExistingPass123!")
+        call_command("promote_placement_admin", username="promoted_user")
+        admin_user.refresh_from_db()
+        admin_user.profile.refresh_from_db()
+        self.assertTrue(admin_user.is_staff)
+        self.assertEqual(admin_user.profile.role, "admin")
+        self.assertTrue(admin_user.check_password("ExistingPass123!"))
+
