@@ -109,3 +109,11 @@ class PlacementPilotFlowTests(TestCase):
         response = self.client.get(f"/manage/drives/{self.drive.pk}/applicants/")
         self.assertEqual(response.status_code, 302)
 
+    def test_account_without_profile_can_use_student_portal(self):
+        unprofiled = User.objects.create_user(username="new_student", password="StudentPass123!")
+        response = self.client.post("/student-login/", {
+            "username": "new_student", "password": "StudentPass123!",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/dashboard/")
+

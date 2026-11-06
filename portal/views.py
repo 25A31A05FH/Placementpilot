@@ -71,7 +71,7 @@ def _portal_login(request, expected_role):
 
         if user:
             actual_role = "admin" if user.is_staff or user.is_superuser else (
-                Profile.objects.filter(user=user).values_list("role", flat=True).first()
+                Profile.objects.filter(user=user).values_list("role", flat=True).first() or "student"
             )
             if expected_role and actual_role != expected_role:
                 portal_name = dict(Profile.ROLE_CHOICES).get(expected_role, expected_role.title())
@@ -414,6 +414,7 @@ def drive_applicants(request, pk):
     return render(request, "portal/drive_applicants.html", {
         "drive": drive,
         "applications": applicants,
+        "pending_count": applicants.filter(status="pending").count(),
     })
 
 

@@ -10,7 +10,7 @@
   </div>
   <div class="stat-cards applicants-summary">
     <div class="stat-card"><span class="stat-label">Total applicants</span><strong>{{ applications|length }}</strong><small>Students who applied to this drive</small><span class="stat-icon">♙</span></div>
-    <div class="stat-card"><span class="stat-label">Pending review</span><strong>{{ applications|dictsort:'status'|length }}</strong><small>Review each application below</small><span class="stat-icon">◷</span></div>
+    <div class="stat-card"><span class="stat-label">Pending review</span><strong>{{ pending_count }}</strong><small>Review each application below</small><span class="stat-icon">◷</span></div>
   </div>
   <div class="panel">
     <div class="panel-heading"><div><h2>Student applications</h2><p>Review applicant details and update their application status.</p></div><a class="text-link" href="{% url 'applications' %}">All applications →</a></div>
