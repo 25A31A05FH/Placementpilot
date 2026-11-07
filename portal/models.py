@@ -13,6 +13,8 @@ class Profile(models.Model):
     backlogs = models.PositiveSmallIntegerField(default=0)
     graduation_year = models.PositiveSmallIntegerField(default=2027)
     skills = models.TextField(blank=True, help_text="Comma-separated skills, e.g. Python, SQL, React")
+    github_profile_url = models.URLField(blank=True, help_text="Public GitHub profile URL")
+    hackerrank_profile_url = models.URLField(blank=True, help_text="Public HackerRank profile URL")
     # Public profile references and self-reported public completion counts.
     # Do not collect or store third-party platform passwords or session cookies.
     leetcode_username = models.CharField(max_length=100, blank=True)

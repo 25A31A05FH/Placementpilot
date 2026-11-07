@@ -127,3 +127,54 @@ class PlacementPilotFlowTests(TestCase):
         self.assertEqual(admin_user.profile.role, "admin")
         self.assertTrue(admin_user.check_password("ExistingPass123!"))
 
+    def test_student_can_save_github_and_hackerrank_profile_urls(self):
+        from .forms import ProfileForm
+        form = ProfileForm(data={
+            "first_name": "Hari", "last_name": "Hanish", "email": self.student.email,
+            "phone": "", "department": "CSE", "cgpa": "8.20", "backlogs": "0",
+            "graduation_year": "2029", "skills": "Python, SQL",
+            "github_profile_url": "https://github.com/hanish",
+            "hackerrank_profile_url": "https://www.hackerrank.com/profile/hanish",
+            "leetcode_username": "hanish_lc",
+            "leetcode_profile_url": "https://leetcode.com/u/hanish_lc/",
+            "leetcode_solved_count": "50",
+        }, instance=self.profile, user=self.student)
+        self.assertTrue(form.is_valid(), form.errors)
+        saved = form.save()
+        self.assertEqual(saved.github_profile_url, "https://github.com/hanish")
+        self.assertEqual(saved.hackerrank_profile_url, "https://www.hackerrank.com/profile/hanish")
+
+    def test_invalid_github_profile_url_is_rejected(self):
+        from .forms import ProfileForm
+        form = ProfileForm(data={
+            "first_name": "Hari", "last_name": "", "email": self.student.email,
+            "phone": "", "department": "CSE", "cgpa": "8.20", "backlogs": "0",
+            "graduation_year": "2029", "skills": "", "github_profile_url": "not-a-url",
+            "hackerrank_profile_url": "", "leetcode_username": "",
+            "leetcode_profile_url": "", "leetcode_solved_count": "0",
+        }, instance=self.profile, user=self.student)
+        self.assertFalse(form.is_valid())
+        self.assertIn("github_profile_url", form.errors)
+
+    def test_admin_provision_command_creates_account_and_does_not_reset_existing_password(self):
+        import os
+        from unittest.mock import patch
+        from django.core.management import call_command
+        with patch.dict(os.environ, {
+            "PLACEMENT_ADMIN_USERNAME": "placement_admin_2026",
+            "PLACEMENT_ADMIN_PASSWORD": "OneTimeAdminPass!2026",
+        }):
+            call_command("promote_placement_admin")
+        admin_user = User.objects.get(username="placement_admin_2026")
+        admin_user.profile.refresh_from_db()
+        self.assertTrue(admin_user.is_staff)
+        self.assertEqual(admin_user.profile.role, "admin")
+        self.assertTrue(admin_user.check_password("OneTimeAdminPass!2026"))
+        with patch.dict(os.environ, {
+            "PLACEMENT_ADMIN_USERNAME": "placement_admin_2026",
+            "PLACEMENT_ADMIN_PASSWORD": "ShouldNotReplace!2026",
+        }):
+            call_command("promote_placement_admin")
+        admin_user.refresh_from_db()
+        self.assertTrue(admin_user.check_password("OneTimeAdminPass!2026"))
+

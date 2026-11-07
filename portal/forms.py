@@ -43,14 +43,19 @@ class ProfileForm(StyledFormMixin, forms.ModelForm):
         model = Profile
         fields = [
             "phone", "department", "cgpa", "backlogs", "graduation_year", "skills",
+            "github_profile_url", "hackerrank_profile_url",
             "leetcode_username", "leetcode_profile_url", "leetcode_solved_count",
         ]
         widgets = {
             "skills": forms.Textarea(attrs={"placeholder": "Python, SQL, communication..."}),
             "cgpa": forms.NumberInput(attrs={"min": "0", "max": "10", "step": "0.01"}),
+            "github_profile_url": forms.URLInput(attrs={"placeholder": "https://github.com/your-username/"}),
+            "hackerrank_profile_url": forms.URLInput(attrs={"placeholder": "https://www.hackerrank.com/profile/your-username"}),
             "leetcode_profile_url": forms.URLInput(attrs={"placeholder": "https://leetcode.com/u/yourname/"}),
         }
         help_texts = {
+            "github_profile_url": "Paste your public GitHub profile link. Never enter a GitHub password or access token.",
+            "hackerrank_profile_url": "Paste your public HackerRank profile link. Never enter a HackerRank password.",
             "leetcode_solved_count": "Enter the total solved count shown on your public LeetCode profile. Self-reported until verified.",
             "leetcode_username": "Username only; never enter your LeetCode password.",
         }
